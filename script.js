@@ -98,3 +98,31 @@ function updateGamepad() {
 
     requestAnimationFrame(updateGamepad); // Continuously check for input
 }
+
+// ✅ Mobile Touch Controls
+const touchControls = {
+    "forwardBtn": "Forward",
+    "leftBtn": "Left",
+    "rightBtn": "Right",
+    "reverseBtn": "Reverse",
+    "stopBtn": "Stop"
+};
+
+Object.keys(touchControls).forEach(btnId => {
+    let button = document.getElementById(btnId);
+    let command = touchControls[btnId];
+
+    if (button) {
+        // Touch Start (Press → Send 1)
+        button.addEventListener("touchstart", (event) => {
+            event.preventDefault(); // Prevent scrolling
+            sendCommand(command, 1);
+        });
+
+        // Touch End (Release → Send 0)
+        button.addEventListener("touchend", (event) => {
+            event.preventDefault();
+            sendCommand(command, 0);
+        });
+    }
+});
