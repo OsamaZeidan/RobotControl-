@@ -4,13 +4,14 @@ import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.3.1
 
 // Firebase Configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyDapjHMKZKcCqOwW8X...",
-    authDomain: "robot-control-69bf6.firebaseapp.com",
-    databaseURL: "https://robot-control-69bf6-default-rtdb.firebaseio.com",
-    projectId: "robot-control-69bf6",
-    storageBucket: "robot-control-69bf6.appspot.com",
-    messagingSenderId: "231241805957",
-    appId: "1:231241805957:web:b54e2c49c3a782cca679ec"
+   apiKey: "AIzaSyAjh1vhKPHAZIKEEUI2UuD1im2pEAlREO8",
+  authDomain: "carmovingtest1.firebaseapp.com",
+  databaseURL: "https://carmovingtest1-default-rtdb.firebaseio.com",
+  projectId: "carmovingtest1",
+  storageBucket: "carmovingtest1.firebasestorage.app",
+  messagingSenderId: "754117511734",
+  appId: "1:754117511734:web:03bf7d3714436ea8ada697",
+  measurementId: "G-Y0KQR0KWSH"
 };
 
 // Initialize Firebase
