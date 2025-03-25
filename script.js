@@ -18,53 +18,54 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-// Function to send movement command
-function sendCommand(direction, value) {
-    set(ref(database, `robot/${direction}`), value)
+// Function to send motor direction and speed command
+function sendMotorCommand(directionValue) {
+    set(ref(database, "FrontMotorDirection"), directionValue)
     .then(() => {
-        document.getElementById("statusText").innerText = `Command Sent: ${direction} (${value})`;
-        console.log(`Sent command: ${direction} -> ${value}`);
+        document.getElementById("statusText").innerText = `Motor Direction: ${directionValue}, Speed: 200`;
+        console.log(`Set Motor Direction: ${directionValue}, Speed: 200`);
     })
     .catch(error => {
         console.error("Firebase error:", error);
     });
+
+    // Set speed to fixed value 200
+    set(ref(database, "FrontMotorSpeed"), 200).catch(error => console.error("Speed set error:", error));
 }
 
-// ✅ Keyboard Controls (Arrow Keys + W/A/S/D + Space for Stop)
+// Keyboard Controls
 const keyMap = {
-    "ArrowUp": "Forward", "w": "Forward",
-    "ArrowLeft": "Left", "a": "Left",
-    "ArrowRight": "Right", "d": "Right",
-    "ArrowDown": "Reverse", "s": "Reverse",
-    " ": "Stop" // Spacebar for stop
+    "ArrowUp": 1, "w": 1,       // Forward
+    "ArrowDown": -1, "s": -1,   // Reverse
+    "ArrowLeft": 2, "a": 2,     // Left
+    "ArrowRight": 3, "d": 3,    // Right
+    " ": 0                      // Stop
 };
 
 // Detect key press
 document.addEventListener("keydown", (event) => {
-    let command = keyMap[event.key];
-    if (command) sendCommand(command, 1);
+    if (keyMap.hasOwnProperty(event.key)) sendMotorCommand(keyMap[event.key]);
 });
 
-// Detect key release
+// Detect key release (Stop on release)
 document.addEventListener("keyup", (event) => {
-    let command = keyMap[event.key];
-    if (command) sendCommand(command, 0);
+    if (keyMap.hasOwnProperty(event.key)) sendMotorCommand(0);
 });
 
-// ✅ Xbox Controller Support (D-Pad + A/X/Y/B for Movement, RT for Stop)
+// ✅ Xbox Controller Support
 let controllerConnected = false;
 
-// Xbox Button Mapping (No Joystick)
+// Xbox Button Mapping (D-Pad + A/X/Y/B)
 const xboxButtons = {
-    12: "Forward",  // D-Pad Up
-    14: "Left",     // D-Pad Left
-    15: "Right",    // D-Pad Right
-    13: "Reverse",  // D-Pad Down
-    2: "Forward",   // X Button
-    3: "Left",      // Y Button
-    1: "Right",     // B Button
-    0: "Reverse",   // A Button
-    7: "Stop"       // RT (Right Trigger) for Stop
+    12: 1,  // D-Pad Up → Forward
+    13: -1, // D-Pad Down → Reverse
+    14: 2,  // D-Pad Left → Left
+    15: 3,  // D-Pad Right → Right
+    2: 1,   // X Button → Forward
+    3: 2,   // Y Button → Left
+    1: 3,   // B Button → Right
+    0: -1,  // A Button → Reverse
+    7: 0    // RT Button → Stop
 };
 
 // Listen for gamepad connection
@@ -84,29 +85,28 @@ function updateGamepad() {
     if (!controllerConnected) return;
 
     const gamepads = navigator.getGamepads();
-    const gamepad = gamepads[0]; // Use first connected gamepad
+    const gamepad = gamepads[0]; // First connected gamepad
 
     if (gamepad) {
-        // Read D-Pad, A/X/Y/B, and RT Buttons (Ignore Joysticks)
         gamepad.buttons.forEach((button, index) => {
-            if (xboxButtons[index]) {
-                let command = xboxButtons[index];
-                let value = button.pressed ? 1 : 0;
-                sendCommand(command, value);
+            if (xboxButtons.hasOwnProperty(index)) {
+                let direction = xboxButtons[index];
+                let value = button.pressed ? direction : 0;
+                sendMotorCommand(value);
             }
         });
     }
 
-    requestAnimationFrame(updateGamepad); // Continuously check for input
+    requestAnimationFrame(updateGamepad); // Continuously check input
 }
 
 // ✅ Mobile Touch Controls
 const touchControls = {
-    "forwardBtn": "Forward",
-    "leftBtn": "Left",
-    "rightBtn": "Right",
-    "reverseBtn": "Reverse",
-    "stopBtn": "Stop"
+    "forwardBtn": 1,
+    "leftBtn": 2,
+    "rightBtn": 3,
+    "reverseBtn": -1,
+    "stopBtn": 0
 };
 
 Object.keys(touchControls).forEach(btnId => {
@@ -114,16 +114,14 @@ Object.keys(touchControls).forEach(btnId => {
     let command = touchControls[btnId];
 
     if (button) {
-        // Touch Start (Press → Send 1)
         button.addEventListener("touchstart", (event) => {
             event.preventDefault(); // Prevent scrolling
-            sendCommand(command, 1);
+            sendMotorCommand(command);
         });
 
-        // Touch End (Release → Send 0)
         button.addEventListener("touchend", (event) => {
             event.preventDefault();
-            sendCommand(command, 0);
+            sendMotorCommand(0);
         });
     }
 });
